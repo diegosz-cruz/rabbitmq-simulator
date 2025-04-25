@@ -1,2 +1,10 @@
-simulator/node_modules
-simulator/coverage
+# Ignorar node_modules em qualquer subpasta
+**/node_modules/
+
+# Ignorar coverage em qualquer subpasta
+**/coverage/
+
+# Outros exemplos comuns
+.env
+.DS_Store
+dist/
