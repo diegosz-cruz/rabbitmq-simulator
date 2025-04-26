@@ -62,14 +62,14 @@ export class ExchangeTopic extends Exchange {
 
         if (afterHash.includes('*')) return this.matchesAsterisk(afterHash, afterMatch)
 
-        return afterHash.join('.') === afterMatch.join('.')
+        return this.joinAndCompareArrays(afterHash, afterMatch)
       }
 
       if (hashSignIndex === bindingParts.length - 1) {
         const afterMatch = routingParts.slice(0, hashSignIndex)
         if (beforeHash.includes('*')) return this.matchesAsterisk(beforeHash, afterMatch)
 
-        return beforeHash.join('.') === afterMatch.join('.')
+        return this.joinAndCompareArrays(beforeHash, afterMatch)
       }
 
       const nextMatchAfterHash = routingParts.indexOf(bindingParts[hashSignIndex + 1])
@@ -83,15 +83,14 @@ export class ExchangeTopic extends Exchange {
       const beforeHashRouting = routingParts.slice(0, hashSignIndex)
       
       if(beforeHash.includes('*')) {
-        if (1 === 2) return false
         if (!this.matchesAsterisk(beforeHash, beforeHashRouting)) return false 
-      } else if (beforeHash.join('.') !== beforeHashRouting.join('.')) {
+      } else if (!this.joinAndCompareArrays(beforeHash, beforeHashRouting)) {
         return false
       }
      
       if(afterHash.includes('*')) {
         if (!this.matchesAsterisk(afterHash, afterHashRouting)) return false 
-      } else if (afterHash.join('.') !== afterHashRouting.join('.')) {
+      } else if (!this.joinAndCompareArrays(afterHash, afterHashRouting)) {
         return false
       }
 

@@ -7,4 +7,5 @@
 # Outros exemplos comuns
 .env
 .DS_Store
+**/.DS_Store
 dist/
