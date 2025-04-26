@@ -1,15 +1,19 @@
+import { randomUUID } from "node:crypto"
+
 export class Binding {
+  id
   exchange
   queue
-  routingKey
+  bindingKey
 
-  constructor(exchange, queue, routingKey) {
+  constructor(exchange, queue, bindingKey) {
+    this.id = randomUUID() 
     this.exchange = exchange
     this.queue = queue
-    this.routingKey = routingKey
+    this.bindingKey = bindingKey
   }
 
-  static create ({ exchange, queue, routingKey = undefined }) {
-    return new Binding(exchange, queue, routingKey)
+  static create ({ exchange, queue, bindingKey = undefined }) {
+    return new Binding(exchange, queue, bindingKey)
   }
 }

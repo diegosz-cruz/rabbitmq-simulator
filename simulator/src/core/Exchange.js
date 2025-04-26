@@ -1,7 +1,7 @@
 export class Exchange {
   name 
   type 
-  binding 
+  binding
 
   constructor(name, type) {
     this.name = name

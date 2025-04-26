@@ -28,12 +28,12 @@ describe('Exchange Direct Test Suite', () => {
       name: 'ex1'
     })
 
-    exchangeDirect.createBinding(queue, 'routingKey1')
+    exchangeDirect.createBinding(queue, 'bindingKey1')
 
     expect(exchangeDirect.bindings.length).toBe(1)
     expect(exchangeDirect.bindings[0].exchange).toBe(exchangeDirect)
     expect(exchangeDirect.bindings[0].queue).toBe(queue)
-    expect(exchangeDirect.bindings[0].routingKey).toBe('routingKey1')
+    expect(exchangeDirect.bindings[0].bindingKey).toBe('bindingKey1') 
 
   })
 
@@ -45,13 +45,13 @@ describe('Exchange Direct Test Suite', () => {
       name: 'ex1'
     })
 
-    exchangeDirect.createBinding(queue, 'routingKey1')
-    exchangeDirect.createBinding(queue, 'routingKey1')
+    exchangeDirect.createBinding(queue, 'bindingKey1')
+    exchangeDirect.createBinding(queue, 'bindingKey1')
 
     expect(exchangeDirect.bindings.length).toBe(1)
     expect(exchangeDirect.bindings[0].exchange).toBe(exchangeDirect) 
     expect(exchangeDirect.bindings[0].queue).toBe(queue)
-    expect(exchangeDirect.bindings[0].routingKey).toBe('routingKey1')
+    expect(exchangeDirect.bindings[0].bindingKey).toBe('bindingKey1')
     expect(exchangeDirect.bindings[1]).toBe(undefined)
 
   })
@@ -64,8 +64,8 @@ describe('Exchange Direct Test Suite', () => {
       name: 'ex1'
     })
 
-    exchangeDirect.createBinding(queue, 'routingKey1')
-    exchangeDirect.createBinding(queue, 'routingKey1')
+    exchangeDirect.createBinding(queue, 'bindingKey1')
+    exchangeDirect.createBinding(queue, 'bindingKey1')
 
     exchangeDirect.removeBinding(exchangeDirect.bindings[0].id)
 
@@ -88,13 +88,13 @@ describe('Exchange Direct Test Suite', () => {
       name: 'ex1'
     })
 
-    const routingKey = 'rk1'
-    exchangeDirect.createBinding(queue1, routingKey)
-    exchangeDirect.createBinding(queue2, 'routingKey2')
+    const bindingKey = 'rk1'
+    exchangeDirect.createBinding(queue1, bindingKey)
+    exchangeDirect.createBinding(queue2, 'bindingKey2')
 
     const message = Message.create({
       payload: 'any_payload',
-      routingKey
+      routingKey: bindingKey
     })
  
     exchangeDirect.sendMessageQueue(message)
@@ -120,13 +120,13 @@ describe('Exchange Direct Test Suite', () => {
       name: 'ex1'
     })
 
-    const routingKey = 'rk'
-    exchangeDirect.createBinding(queue1, routingKey)
-    exchangeDirect.createBinding(queue2, routingKey)
+    const bindingKey = 'rk'
+    exchangeDirect.createBinding(queue1, bindingKey)
+    exchangeDirect.createBinding(queue2, bindingKey)
 
     const message = Message.create({
       payload: 'any_payload',
-      routingKey
+      routingKey: bindingKey
     })
 
     exchangeDirect.sendMessageQueue(message)

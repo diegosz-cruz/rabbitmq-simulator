@@ -7,18 +7,18 @@ export class ExchangeDirect extends Exchange {
     super(name)
   }
 
-  createBinding(queue, routingKey) {
+  createBinding(queue, bindingKey) {
     const existsBindingWithRoutingAndQueue =
       this
         .bindings
-        .find(bd => bd.routingKey === routingKey && bd.queue.id === queue.id)
+        .find(bd => bd.bindingKey === bindingKey && bd.queue.id === queue.id)
 
     if (existsBindingWithRoutingAndQueue) return
 
     this.bindings.push(Binding.create({
       exchange: this,
       queue,
-      routingKey
+      bindingKey
     }))
   }
 
@@ -27,8 +27,8 @@ export class ExchangeDirect extends Exchange {
   }
 
   sendMessageQueue(message) {
-    for (const { routingKey, queue } of this.bindings) {
-      if (routingKey === message.routingKey) { 
+    for (const { bindingKey, queue } of this.bindings) {
+      if (bindingKey === message.routingKey) { 
         queue.addMessageInQueue(message)
       }
     }

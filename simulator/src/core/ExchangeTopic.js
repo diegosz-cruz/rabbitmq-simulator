@@ -7,18 +7,18 @@ export class ExchangeTopic extends Exchange {
     super(name)
   }
 
-  createBinding(queue, routingKey) {
+  createBinding(queue, bindingKey) {
     const existsBindingWithRoutingAndQueue =
       this
         .bindings
-        .find(bd => bd.routingKey === routingKey && bd.queue.id === queue.id)
+        .find(bd => bd.bindingKey === bindingKey && bd.queue.id === queue.id)
 
     if (existsBindingWithRoutingAndQueue) return
 
     this.bindings.push(Binding.create({
       exchange: this,
       queue,
-      routingKey
+      bindingKey
     }))
   }
 
@@ -27,8 +27,9 @@ export class ExchangeTopic extends Exchange {
   }
 
   sendMessageQueue(message) {
-    for (const { routingKey, queue } of this.bindings) {
-      if (routingKey === message.routingKey) {
+    for (const { bindingKey, queue } of this.bindings) {
+      const a = this.matchBindingAndRoutingKey(bindingKey, message.routingKey)
+      if (a) {
         queue.addMessageInQueue(message)
       }
     }
@@ -48,7 +49,7 @@ export class ExchangeTopic extends Exchange {
 
     const bindingParts = bindingKey.split('.')
     const routingParts = routingKey.split('.')
- 
+
     if (bindingKey.includes('#')) {
       if (bindingParts.length === 1) return true
       const hashSignIndex = bindingParts.indexOf('#')
@@ -72,31 +73,31 @@ export class ExchangeTopic extends Exchange {
         return this.joinAndCompareArrays(beforeHash, afterMatch)
       }
 
-      const nextMatchAfterHash = routingParts.indexOf(bindingParts[hashSignIndex + 1])
+      const restBindingParts = bindingParts.slice(hashSignIndex + 1, bindingParts.length)
+      const afterHashRouting = routingParts.slice(-restBindingParts.length)
+      const beforeHashRouting = routingParts.slice(0, hashSignIndex)
+       
       if (
         bindingParts.includes('*') &&
-          bindingParts.length > routingParts.length
-        ) return false
+        bindingParts.length > routingParts.length
+      ) return false
 
-      const afterHashRouting = routingParts.slice(nextMatchAfterHash, routingParts.length)
 
-      const beforeHashRouting = routingParts.slice(0, hashSignIndex)
-      
-      if(beforeHash.includes('*')) {
-        if (!this.matchesAsterisk(beforeHash, beforeHashRouting)) return false 
+      if (beforeHash.includes('*')) {
+        if (!this.matchesAsterisk(beforeHash, beforeHashRouting)) return false
       } else if (!this.joinAndCompareArrays(beforeHash, beforeHashRouting)) {
         return false
       }
-     
-      if(afterHash.includes('*')) {
-        if (!this.matchesAsterisk(afterHash, afterHashRouting)) return false 
+
+      if (afterHash.includes('*')) {
+        if (!this.matchesAsterisk(afterHash, afterHashRouting)) return false
       } else if (!this.joinAndCompareArrays(afterHash, afterHashRouting)) {
         return false
       }
 
-      return true 
+      return true
 
-    } 
+    }
     if (bindingKey.includes('*')) {
       return this.matchesAsterisk(bindingParts, routingParts)
     }
