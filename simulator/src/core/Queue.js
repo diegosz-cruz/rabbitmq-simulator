@@ -4,9 +4,10 @@ import { randomUUID } from 'node:crypto'
 export class Queue {
   id
   name
-  messages = [] 
-  consumers = [] 
+  messages = []
+  consumers = []
   consumerIndex = 0
+  isDelivering = false
 
   constructor(name) {
     this.id = randomUUID()
@@ -27,6 +28,7 @@ export class Queue {
 
   addConsumer(consumer) {
     this.consumers.push(consumer)
+    this.deliver()
   }
 
   removeConsumer(consumerId) {
@@ -37,21 +39,36 @@ export class Queue {
     if (!(message instanceof Message)) throw new Error('Invalid type Message')
     this.messages.push(message)
 
-    this.sendMessage()
+    this.deliver()
   }
 
-  sendMessage() {
-    while (this.hasMessages() && this.hasConsumers()) {
+  deliver() {
+    if (this.isDelivering) {
+      return // Já está entregando, deixa continuar
+    }
+    this.isDelivering = true
+
+    const deliverNext = () => {
+      if (!this.hasMessages() || !this.hasConsumers()) {
+        this.isDelivering = false
+        return
+      }
       const message = this.firstMessageFromQueue()
       const consumer = this.consumers[this.consumerIndex % this.consumers.length]
 
       consumer.readMsg(message)
       this.consumerIndex++
+
+      setTimeout(deliverNext, 0) // Deixar o event loop rodar e depois entregar a próxima
     }
+    
+    setTimeout(deliverNext, 0) 
   }
 
+
+
   static create({ name }) {
-    return new Queue(name)
-  }
+  return new Queue(name)
+}
 
 }

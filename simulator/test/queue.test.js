@@ -1,4 +1,4 @@
-import { it, expect, describe, beforeAll, jest } from '@jest/globals'
+import { it, expect, describe, beforeAll, jest, beforeEach, afterEach } from '@jest/globals'
 import { Message } from '../src/core/Message'
 import { Queue } from '../src/core/Queue'
 import { randomUUID } from 'node:crypto'
@@ -6,6 +6,14 @@ import { randomUUID } from 'node:crypto'
 describe('Queue Test Suite', () => {
   beforeAll(() => {
     jest.spyOn(console, 'log').mockImplementation(() => { })
+  })
+
+  beforeEach(() => {
+    jest.useFakeTimers()
+  })
+
+  afterEach(() => {
+    jest.useRealTimers()
   })
   it('should adding message in queue', async () => {
     const queue = Queue.create({
@@ -69,58 +77,6 @@ describe('Queue Test Suite', () => {
 
   })
 
-  it('should send messages to available consumers in a round robin format', async () => {
-    const queue = Queue.create({
-      name: 'q1'
-    })
-    for (let i = 0; i < 5; i++) {
-      const message = Message.create({
-        payload: `message-${i}`,
-        routingKey: ''
-      })
-      queue.addMessageInQueue(message)
-    }
-
-    const consumer1 = {
-      id: randomUUID(),
-      name: 'c1',
-      readMsg(message) { }
-    }
-    const consumer2 = {
-      id: randomUUID(),
-      name: 'c2',
-      readMsg(message) { }
-    }
-
-    const spyConsumer1 = jest.spyOn(consumer1, 'readMsg')
-    const spyConsumer2 = jest.spyOn(consumer2, 'readMsg')
-
-    queue.addConsumer(consumer1)
-    queue.addConsumer(consumer2)
-
-    queue.sendMessage()
-
-    expect(queue.messages.length).toBe(0)
-    expect(spyConsumer1).toHaveBeenCalledTimes(3)
-    expect(spyConsumer2).toHaveBeenCalledTimes(2)
-
-    expect(spyConsumer1).toHaveBeenNthCalledWith(1, expect.objectContaining({
-      payload: 'message-0'
-    }))
-    expect(spyConsumer2).toHaveBeenNthCalledWith(1, expect.objectContaining({
-      payload: 'message-1'
-    }))
-    expect(spyConsumer1).toHaveBeenNthCalledWith(2, expect.objectContaining({
-      payload: 'message-2'
-    }))
-    expect(spyConsumer2).toHaveBeenNthCalledWith(2, expect.objectContaining({
-      payload: 'message-3'
-    }))
-    expect(spyConsumer1).toHaveBeenNthCalledWith(3, expect.objectContaining({
-      payload: 'message-4'
-    }))
-  })
-
   it('should do nothing if there are no consumers', () => {
     const queue = Queue.create({
       name: 'q1'
@@ -131,7 +87,8 @@ describe('Queue Test Suite', () => {
     })
     queue.addMessageInQueue(message)
 
-    queue.sendMessage()
+    jest.runAllTimers()
+    // queue.sendMessage()
     expect(queue.messages.length).toBe(1)
   })
 
@@ -153,6 +110,8 @@ describe('Queue Test Suite', () => {
       routingKey: '',
     })
     queue.addMessageInQueue(message)
+
+    jest.runAllTimers()
 
     expect(queue.messages.length).toBe(0)
     expect(spyConsumer1).toHaveBeenCalledTimes(1)
@@ -179,7 +138,7 @@ describe('Queue Test Suite', () => {
     const spyConsumer = jest.spyOn(consumer, 'readMsg')
 
     queue.addConsumer(consumer)
-    queue.sendMessage()
+    jest.runAllTimers()
 
     expect(queue.messages.length).toBe(0)
     expect(spyConsumer).toHaveBeenCalledTimes(1)
@@ -188,4 +147,139 @@ describe('Queue Test Suite', () => {
     }))
   })
 
+  it('should send messages to available consumers in a round robin format [2 consumers]', async () => {
+    const queue = Queue.create({
+      name: 'q1'
+    })
+  
+    for (let i = 0; i < 5; i++) {
+      const message = Message.create({
+        payload: `message-${i}`,
+        routingKey: ''
+      })
+      queue.addMessageInQueue(message)
+    }
+  
+    const consumer1 = {
+      id: randomUUID(),
+      name: 'c1',
+      readMsg(message) { }
+    }
+    const consumer2 = {
+      id: randomUUID(),
+      name: 'c2',
+      readMsg(message) { }
+    }
+  
+    const spyConsumer1 = jest.spyOn(consumer1, 'readMsg')
+    const spyConsumer2 = jest.spyOn(consumer2, 'readMsg')
+  
+    queue.addConsumer(consumer1)
+  
+    // Avança o tempo para processar a primeira mensagem
+    jest.runOnlyPendingTimers()
+  
+    queue.addConsumer(consumer2)
+  
+    // Avança o tempo até todas as mensagens serem processadas
+    jest.runAllTimers()
+  
+    // Agora os dois consumidores devem ter recebido mensagens
+    expect(spyConsumer1).toHaveBeenCalledTimes(3)
+    expect(spyConsumer2).toHaveBeenCalledTimes(2)
+  
+    expect(spyConsumer1).toHaveBeenNthCalledWith(1, expect.objectContaining({
+      payload: 'message-0'
+    }))
+    expect(spyConsumer1).toHaveBeenNthCalledWith(2, expect.objectContaining({
+      payload: 'message-2'
+    }))
+    expect(spyConsumer1).toHaveBeenNthCalledWith(3, expect.objectContaining({
+      payload: 'message-4'
+    }))
+    expect(spyConsumer2).toHaveBeenNthCalledWith(1, expect.objectContaining({
+      payload: 'message-1'
+    }))
+    expect(spyConsumer2).toHaveBeenNthCalledWith(2, expect.objectContaining({
+      payload: 'message-3'
+    }))
+  })
+  
+  it('should send messages to available consumers in a round robin format [3 consumers]', async () => {
+    const queue = Queue.create({
+      name: 'q1'
+    })
+  
+    for (let i = 0; i < 9; i++) {
+      const message = Message.create({
+        payload: `message-${i}`,
+        routingKey: ''
+      })
+      queue.addMessageInQueue(message)
+    }
+  
+    const consumer1 = {
+      id: randomUUID(),
+      name: 'c1',
+      readMsg(message) { }
+    }
+    const consumer2 = {
+      id: randomUUID(),
+      name: 'c2',
+      readMsg(message) { }
+    }
+    const consumer3 = {
+      id: randomUUID(),
+      name: 'c3',
+      readMsg(message) { }
+    }
+  
+    const spyConsumer1 = jest.spyOn(consumer1, 'readMsg')
+    const spyConsumer2 = jest.spyOn(consumer2, 'readMsg')
+    const spyConsumer3 = jest.spyOn(consumer3, 'readMsg')
+  
+    queue.addConsumer(consumer1)
+    queue.addConsumer(consumer2)
+    queue.addConsumer(consumer3)
+  
+    // Avança o tempo até todas as mensagens serem processadas
+    jest.runAllTimers()
+  
+    // Agora os dois consumidores devem ter recebido mensagens
+    expect(spyConsumer1).toHaveBeenCalledTimes(3)
+    expect(spyConsumer2).toHaveBeenCalledTimes(3)
+    expect(spyConsumer3).toHaveBeenCalledTimes(3)
+  
+    expect(spyConsumer1).toHaveBeenNthCalledWith(1, expect.objectContaining({
+      payload: 'message-0'
+    }))
+    expect(spyConsumer1).toHaveBeenNthCalledWith(2, expect.objectContaining({
+      payload: 'message-3'
+    }))
+    expect(spyConsumer1).toHaveBeenNthCalledWith(3, expect.objectContaining({
+      payload: 'message-6'
+    }))
+    expect(spyConsumer2).toHaveBeenNthCalledWith(1, expect.objectContaining({
+      payload: 'message-1'
+    }))
+    expect(spyConsumer2).toHaveBeenNthCalledWith(2, expect.objectContaining({
+      payload: 'message-4'
+    }))
+    expect(spyConsumer2).toHaveBeenNthCalledWith(3, expect.objectContaining({
+      payload: 'message-7'
+    }))
+    expect(spyConsumer3).toHaveBeenNthCalledWith(1, expect.objectContaining({
+      payload: 'message-2'
+    }))
+    expect(spyConsumer3).toHaveBeenNthCalledWith(2, expect.objectContaining({
+      payload: 'message-5'
+    }))
+    expect(spyConsumer3).toHaveBeenNthCalledWith(3, expect.objectContaining({
+      payload: 'message-8'
+    }))
+  })
+
+
 })
+
+

@@ -65,7 +65,6 @@ describe('Exchange Fanout Test Suite', () => {
     })
 
     exchangeFanout.createBinding(queue)
-
     exchangeFanout.removeBinding(exchangeFanout.bindings[0].id)
 
     expect(exchangeFanout.bindings.length).toBe(0)

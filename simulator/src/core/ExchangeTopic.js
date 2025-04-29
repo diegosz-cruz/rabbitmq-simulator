@@ -101,7 +101,8 @@ export class ExchangeTopic extends Exchange {
     if (bindingKey.includes('*')) {
       return this.matchesAsterisk(bindingParts, routingParts)
     }
-  }
+    if (bindingKey === routingKey) return true
+  } 
 
   static create({ name }) {
     return new ExchangeTopic(name)

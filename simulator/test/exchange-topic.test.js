@@ -20,6 +20,16 @@ describe('Exchange Topic Test Suite', () => {
     expect(exchangeTopic.matchBindingAndRoutingKey('#.a.b', 'b.x.y.a.b.c')).toBe(false)
   })
 
+  it('should return a valids matches when hash(#) and asterisk(*) is not provided', () => {
+    const exchangeTopic = ExchangeTopic.create({
+      name: 'ex1'
+    })
+
+    expect(exchangeTopic.matchBindingAndRoutingKey('abcd', 'abcd')).toBe(true)
+    expect(exchangeTopic.matchBindingAndRoutingKey('a.b.c.d', 'a.b.c.d')).toBe(true) 
+
+  })
+
   it('should return a valids matches when hash(#) is end', () => {
     const exchangeTopic = ExchangeTopic.create({
       name: 'ex1'

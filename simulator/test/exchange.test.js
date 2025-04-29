@@ -25,4 +25,11 @@ describe('Exchange Direct Test Suite', () => {
       .toThrow('Method not implemented!')
   })
 
+  it('should throw an error when createBinding method is not implemented', () => {
+    const exchange = new Exchange('ex1')
+
+    expect(() => exchange.createBinding())
+      .toThrow('Method not implemented!')
+  })
+
 })
