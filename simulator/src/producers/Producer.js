@@ -1,6 +1,6 @@
 import { Message } from '../core/Message.js'
 
-export class ExampleProducer {
+export class Producer {
   name 
   exchange
 
@@ -22,6 +22,6 @@ export class ExampleProducer {
   }
 
   static create ({ name }) {
-    return new ExampleProducer(name)
+    return new Producer(name)
   }
 }

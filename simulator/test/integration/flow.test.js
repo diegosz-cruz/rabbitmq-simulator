@@ -1,7 +1,7 @@
 import { it, expect, describe, beforeAll, jest, beforeEach, afterEach } from '@jest/globals'
 import { Broker } from '../../src/core/Broker'
-import { ExampleProducer } from '../../src/producers/exampleProducer'
-import { ExampleConsumer } from '../../src/consumers/exampleConsumer'
+import { Producer } from '../../src/producers/Producer'
+import { Consumer } from '../../src/consumers/Consumer'
 
 function createInstances(numberQueues, numberProducers, numberConsumers, typeExchange) {
   const broker = Broker.create()
@@ -16,14 +16,14 @@ function createInstances(numberQueues, numberProducers, numberConsumers, typeExc
   let producers = Object.fromEntries(
     Array.from({ length: numberProducers + 1 }).map((_, i) => {
       const name = `p${i}`
-      const producer = ExampleProducer.create({ name })
+      const producer = Producer.create({ name })
       return [name, producer]
     })
   )
   let consumers = Object.fromEntries(
     Array.from({ length: numberConsumers + 1 }).map((_, i) => {
       const name = `c${i}`
-      const consumer = ExampleConsumer.create({ name })
+      const consumer = Consumer.create({ name })
       return [name, consumer]
     })
   )

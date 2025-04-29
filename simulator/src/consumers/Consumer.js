@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto'
 
-export class ExampleConsumer {
+export class Consumer {
   id
   name
 
@@ -14,6 +14,6 @@ export class ExampleConsumer {
   }
 
   static create({ name }) {
-    return new ExampleConsumer(name)
+    return new Consumer(name)
   }
 }
